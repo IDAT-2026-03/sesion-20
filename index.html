@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sesión 20: Ecosistema Bootstrap — IDAT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            idatYellow: '#FFC820',
+            idatDark: '#111827',
+            idatMuted: '#4B5563',
+            idatLight: '#F3F4F6'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .slide-container { perspective: 1000px; }
+    .slide {
+      transition: all 0.35s ease-in-out;
+      opacity: 0;
+      transform: scale(0.99) translateY(4px);
+      display: none;
+    }
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      animation: fadeSlide .3s ease;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: scale(0.99) translateY(4px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+    .dark-scroll::-webkit-scrollbar-thumb { background: #4b5563; }
+
+    /* ---------- Simulador de la rejilla Bootstrap ---------- */
+    .sim-frame { transition: width .15s linear; overflow: hidden; }
+    .device-stage {
+      background-color: #f9fafb;
+      background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+      background-size: 16px 16px;
+      background-position: center;
+    }
+    .bs-embed {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    input[type="range"].sim-range {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      outline: none;
+    }
+    input[type="range"].sim-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #111827;
+      border: 3px solid #FFC820;
+      cursor: grab;
+    }
+    input[type="range"].sim-range::-moz-range-thumb {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #111827;
+      border: 3px solid #FFC820;
+      cursor: grab;
+    }
+
+    /* Celdas del diagrama de 12 columnas */
+    .col-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2rem;
+      border-radius: 6px;
+      font-size: .6rem;
+      font-weight: 700;
+      font-family: "Fira Code", monospace;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-idatDark font-sans h-screen flex flex-col justify-between overflow-hidden select-none">
+
+  <!-- ================= HEADER ================= -->
+  <header class="bg-idatDark text-white px-6 md:px-12 py-3 flex items-center justify-between border-b-4 border-idatYellow shadow-md h-[72px] flex-shrink-0">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="bg-idatYellow text-idatDark font-black px-3 py-1 rounded text-lg tracking-wider flex-shrink-0">IDAT</div>
+      <div class="h-6 w-[1px] bg-gray-600 hidden md:block flex-shrink-0"></div>
+      <div class="hidden md:block min-w-0">
+        <span class="text-xs text-idatYellow font-bold tracking-widest block uppercase">Desarrollo Web: HTML &amp; CSS · Bloque 2</span>
+        <span class="text-sm font-semibold truncate block">Sesión 20: Ecosistema Bootstrap (rejilla, utilidades y componentes)</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <span class="hidden lg:inline-block bg-sky-500/15 border border-sky-400/40 text-sky-300 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Bootstrap 5.3</span>
+      <div class="text-right text-xs md:text-sm font-medium text-gray-300">
+        Docente: <strong class="text-idatYellow">Ing. Jhon Chavez</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= DIAPOSITIVAS ================= -->
+  <main class="flex-1 p-4 md:p-6 overflow-hidden flex items-center justify-center">
+    <div class="w-full max-w-[1320px] h-full flex items-stretch justify-center slide-container">
+
+      <!-- ============================================================ -->
+      <!-- 1 · PORTADA                                                   -->
+      <!-- ============================================================ -->
+      <div id="slide-1" class="slide active w-full bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden flex-col md:flex-row h-full">
+        <div class="md:w-5/12 bg-idatYellow p-8 md:p-12 flex flex-col justify-between relative overflow-hidden h-full flex-shrink-0">
+          <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+          <div class="relative">
+            <span class="bg-idatDark text-idatYellow font-black px-4 py-1.5 rounded-full text-xs tracking-widest uppercase">SESIÓN 20</span>
+            <h1 class="text-3xl md:text-5xl font-black text-idatDark mt-6 leading-[1.05]">Ecosistema<br>Bootstrap</h1>
+            <p class="text-idatDark/80 font-medium mt-3 text-sm md:text-base">El framework que ya trae la rejilla, las utilidades y los componentes. Aprenderás a usarlo <strong>sin olvidar el CSS que ya sabes</strong>.</p>
+
+            <div class="mt-7 bg-idatDark/5 border-2 border-idatDark/15 rounded-2xl p-4">
+              <p class="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-idatDark/50 mb-3">12 columnas · la suma siempre da 12</p>
+              <div class="space-y-1.5">
+                <div class="grid grid-cols-12 gap-1">
+                  <div class="col-span-6 h-7 rounded bg-idatDark text-idatYellow flex items-center justify-center text-[9px] font-mono font-bold">col-6</div>
+                  <div class="col-span-6 h-7 rounded bg-idatDark text-idatYellow flex items-center justify-center text-[9px] font-mono font-bold">col-6</div>
+                </div>
+                <div class="grid grid-cols-12 gap-1">
+                  <div class="col-span-4 h-7 rounded bg-idatDark text-white flex items-center justify-center text-[9px] font-mono font-bold">4</div>
+                  <div class="col-span-4 h-7 rounded bg-idatDark text-white flex items-center justify-center text-[9px] font-mono font-bold">4</div>
+                  <div class="col-span-4 h-7 rounded bg-idatDark text-white flex items-center justify-center text-[9px] font-mono font-bold">4</div>
+                </div>
+                <div class="grid grid-cols-12 gap-1">
+                  <div class="col-span-3 h-7 rounded border-2 border-idatDark/40 text-idatDark/80 flex items-center justify-center text-[9px] font-mono font-bold">3</div>
+                  <div class="col-span-3 h-7 rounded border-2 border-idatDark/40 text-idatDark/80 flex items-center justify-center text-[9px] font-mono font-bold">3</div>
+                  <div class="col-span-3 h-7 rounded border-2 border-idatDark/40 text-idatDark/80 flex items-center justify-center text-[9px] font-mono font-bold">3</div>
+                  <div class="col-span-3 h-7 rounded border-2 border-idatDark/40 text-idatDark/80 flex items-center justify-center text-[9px] font-mono font-bold">3</div>
+                </div>
+              </div>
+              <p class="text-[9px] text-idatDark/55 mt-2.5 leading-snug">Cada fila de la página usa una de estas combinaciones.</p>
+            </div>
+          </div>
+          <div class="border-t border-idatDark/20 pt-6 relative">
+            <span class="text-xs font-bold uppercase tracking-wider text-idatDark/60 block">Facilitador del curso:</span>
+            <span class="text-xl font-extrabold text-idatDark block mt-1">Ing. Jhon Chavez</span>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-xs font-semibold bg-idatDark/10 text-idatDark px-2 py-0.5 rounded">IDAT © 2026</span>
+              <span class="text-xs font-semibold bg-idatDark text-idatYellow px-2 py-0.5 rounded">Semana 10</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:w-7/12 p-8 md:p-12 flex flex-col justify-center bg-gray-50 h-full overflow-y-auto custom-scrollbar">
+          <h2 class="text-2xl md:text-3xl font-bold text-idatDark mb-2">Lo que hacías a mano, ahora en una clase</h2>
+          <p class="text-gray-600 mb-5 leading-relaxed text-xs md:text-sm">En la Sesión 19 armaste la rejilla con <code>display: grid</code>, las media queries y tus propias variables. Hoy verás que Bootstrap hace exactamente lo mismo, pero <strong>ya escrito y probado</strong>. La ventaja: velocidad. La responsabilidad: saber qué hay debajo para no quedar atrapado cuando algo no se ve como quieres.</p>
+
+          <div class="grid grid-cols-3 gap-3 mb-5">
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 text-center shadow-sm">
+              <span class="text-3xl mb-1 block">🧱</span>
+              <h3 class="font-bold text-xs md:text-sm text-idatDark">Rejilla de 12</h3>
+              <p class="text-[11px] text-idatMuted mt-1">Columnas listas para cualquier pantalla.</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 text-center shadow-sm">
+              <span class="text-3xl mb-1 block">🛠️</span>
+              <h3 class="font-bold text-xs md:text-sm text-idatDark">Utilidades</h3>
+              <p class="text-[11px] text-idatMuted mt-1">Espaciados, colores y alineación en clases.</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 text-center shadow-sm">
+              <span class="text-3xl mb-1 block">🧩</span>
+              <h3 class="font-bold text-xs md:text-sm text-idatDark">Componentes</h3>
+              <p class="text-[11px] text-idatMuted mt-1">Botones, alertas, tarjetas y menús.</p>
+            </div>
+          </div>
+
+          <div class="p-3.5 bg-white rounded-xl border-l-4 border-idatYellow shadow-sm">
+            <p class="text-[11px] md:text-xs text-idatDark leading-relaxed">
+              <strong>En clase:</strong> instalaremos Bootstrap, armaremos una rejilla real y lo aplicaremos a la landing del centro odontológico que empezaste en la sesión anterior.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 2 · RUTA DE LA SESIÓN                                         -->
+      <!-- ============================================================ -->
+      <div id="slide-2" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">RUTA DE HOY</span>
+              <h2 class="text-xl md:text-2xl font-black text-idatDark uppercase tracking-tight">Los 6 temas de la clase</h2>
+            </div>
+            <p class="text-xs md:text-sm text-idatMuted mb-4">De instalar a integrar: primero entiendes la rejilla, después la aplicas a tu proyecto.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="flex gap-3 p-4 rounded-2xl bg-idatLight border-l-4 border-idatYellow items-start">
+                <span class="font-black text-idatYellow text-2xl leading-none">01</span>
+                <div>
+                  <h3 class="font-bold text-sm text-idatDark">Instalación por CDN</h3>
+                  <p class="text-[11px] text-idatMuted mt-1">Dos etiquetas en el HTML y Bootstrap queda listo.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 p-4 rounded-2xl bg-idatLight border-l-4 border-amber-500 items-start">
+                <span class="font-black text-amber-500 text-2xl leading-none">02</span>
+                <div>
+                  <h3 class="font-bold text-sm text-idatDark">Rejilla de 12 columnas</h3>
+                  <p class="text-[11px] text-idatMuted mt-1"><code>container</code>, <code>row</code> y <code>col</code>: la base de todo.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 p-4 rounded-2xl bg-idatLight border-l-4 border-emerald-500 items-start">
+                <span class="font-black text-emerald-500 text-2xl leading-none">03</span>
+                <div>
+                  <h3 class="font-bold text-sm text-idatDark">Breakpoints</h3>
+                  <p class="text-[11px] text-idatMuted mt-1"><code>sm</code>, <code>md</code>, <code>lg</code> y <code>xl</code> en el nombre de la clase.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 p-4 rounded-2xl bg-idatLight border-l-4 border-blue-500 items-start">
+                <span class="font-black text-blue-500 text-2xl leading-none">04</span>
+                <div>
+                  <h3 class="font-bold text-sm text-idatDark">Espaciados y utilidades</h3>
+                  <p class="text-[11px] text-idatMuted mt-1"><code>mt-4</code>, <code>px-3</code>, <code>gap-2</code>: sin escribir CSS.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 p-4 rounded-2xl bg-idatLight border-l-4 border-purple-500 items-start">
+                <span class="font-black text-purple-500 text-2xl leading-none">05</span>
+                <div>
+                  <h3 class="font-bold text-sm text-idatDark">Botones y alertas</h3>
+                  <p class="text-[11px] text-idatMuted mt-1">Componentes que solo necesitan las clases correctas.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 p-4 rounded-2xl bg-idatLight border-l-4 border-idatDark items-start">
+                <span class="font-black text-idatDark text-2xl leading-none">06</span>
+                <div>
+                  <h3 class="font-bold text-sm text-idatDark">Taller de integración</h3>
+                  <p class="text-[11px] text-idatMuted mt-1">Aplicar Bootstrap a la landing odontológica.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 p-3 bg-idatDark text-white rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+              <div class="flex items-center gap-3">
+                <span class="bg-sky-500 text-white font-black text-[10px] px-2 py-1 rounded uppercase tracking-wider flex-shrink-0">Práctica</span>
+                <p class="text-[11px] md:text-xs text-gray-300"><strong class="text-idatYellow">Continúa tu Proyecto Final:</strong> lo que armaste con CSS propio hoy lo aceleras con el framework.</p>
+              </div>
+              <span class="text-[11px] font-mono text-gray-500 flex-shrink-0">2 horas · Bloque 2 · CSS Avanzado</span>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-idatMuted flex-shrink-0">
+            <span>Ecosistema Bootstrap — Sesión 20</span>
+            <span class="font-semibold text-idatDark">IDAT · Desarrollo Web 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 3 · ¿QUÉ ES BOOTSTRAP?                                        -->
+      <!-- ============================================================ -->
+      <div id="slide-3" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">CONCEPTO</span>
+                <h2 class="text-xl md:text-2xl font-black text-idatDark uppercase tracking-tight">¿Qué es Bootstrap y por qué usarlo?</h2>
+              </div>
+              <span class="text-xs text-idatMuted font-bold uppercase hidden md:block">Un atajo, no magia</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+              <div class="md:col-span-5 flex flex-col justify-center gap-3">
+                <p class="text-gray-600 text-xs md:text-sm leading-relaxed">
+                  Bootstrap es una <strong>colección de CSS ya escrito</strong> (y un poco de JavaScript) que incluye una rejilla de 12 columnas, decenas de clases utilitarias y componentes completos.
+                </p>
+
+                <div class="p-3 bg-amber-50 border-l-4 border-idatYellow rounded-xl text-[11px] text-idatDark">
+                  <strong class="block mb-0.5">Por debajo sigue siendo CSS</strong>
+                  <p class="text-gray-600">Su rejilla usa Flexbox y sus breakpoints son media queries. Todo lo de las sesiones 18 y 19 está ahí dentro.</p>
+                </div>
+
+                <div class="p-3 bg-emerald-50 border-l-4 border-emerald-500 rounded-xl text-[11px] text-emerald-950">
+                  <strong class="block mb-0.5">Cuándo conviene</strong>
+                  <p class="text-gray-600">Prototipos rápidos, paneles administrativos, equipos grandes y proyectos con fecha corta.</p>
+                </div>
+
+                <div class="p-3 bg-red-50 border-l-4 border-red-500 rounded-xl text-[11px] text-red-950">
+                  <strong class="block mb-0.5">Cuándo no</strong>
+                  <p class="text-gray-600">Diseños muy personalizados o páginas de una sola sección: cargas más CSS del que usas.</p>
+                </div>
+              </div>
+
+              <div class="md:col-span-7 flex flex-col">
+                <div class="overflow-hidden rounded-xl border border-gray-200">
+                  <table class="w-full text-[11px] md:text-xs text-left">
+                    <thead class="bg-idatDark text-white">
+                      <tr>
+                        <th class="px-3 py-2 font-bold">Aspecto</th>
+                        <th class="px-3 py-2 font-bold">Tu CSS (Sesión 19)</th>
+                        <th class="px-3 py-2 font-bold">Bootstrap (Sesión 20)</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-600">
+                      <tr>
+                        <td class="px-3 py-2 font-semibold text-idatDark">Velocidad</td>
+                        <td class="px-3 py-2">Escribes cada regla</td>
+                        <td class="px-3 py-2 text-emerald-700 font-semibold">Casi todo ya existe</td>
+                      </tr>
+                      <tr class="bg-idatLight/60">
+                        <td class="px-3 py-2 font-semibold text-idatDark">Control</td>
+                        <td class="px-3 py-2 text-emerald-700 font-semibold">Total: es tu código</td>
+                        <td class="px-3 py-2">Hay que respetar sus clases</td>
+                      </tr>
+                      <tr>
+                        <td class="px-3 py-2 font-semibold text-idatDark">Peso</td>
+                        <td class="px-3 py-2 text-emerald-700 font-semibold">Solo lo necesario</td>
+                        <td class="px-3 py-2">~230 KB de CSS completo</td>
+                      </tr>
+                      <tr class="bg-idatLight/60">
+                        <td class="px-3 py-2 font-semibold text-idatDark">Aprendizaje</td>
+                        <td class="px-3 py-2">Entiendes el porqué</td>
+                        <td class="px-3 py-2">Memorizas nombres de clases</td>
+                      </tr>
+                      <tr>
+                        <td class="px-3 py-2 font-semibold text-idatDark">Mantenimiento</td>
+                        <td class="px-3 py-2">Tú decides la estructura</td>
+                        <td class="px-3 py-2">Estándar conocido por todos</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="mt-2 p-2.5 bg-gray-100 rounded-xl text-[10.5px] text-gray-700">
+                  💡 <strong>Lo importante:</strong> quien sabe CSS usa Bootstrap con criterio; quien no sabe CSS queda atrapado cuando el resultado no es el esperado. Por eso dimos Grid y Flexbox primero.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-gray-100 flex justify-between text-xs text-idatMuted flex-shrink-0">
+            <span>Concepto: framework de CSS</span>
+            <span class="hidden md:inline">Rejilla · utilidades · componentes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 4 · INSTALACIÓN POR CDN                                       -->
+      <!-- ============================================================ -->
+      <div id="slide-4" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 1</span>
+                <h2 class="text-xl md:text-2xl font-black text-idatDark uppercase tracking-tight">Instalación: dos etiquetas y listo</h2>
+              </div>
+              <span class="text-xs text-idatMuted font-bold uppercase hidden md:block">CDN</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+              <div class="md:col-span-5 flex flex-col justify-center gap-2.5">
+                <p class="text-gray-600 text-xs md:text-sm leading-relaxed">
+                  La forma más rápida es el <strong>CDN</strong>: el CSS se enlaza en el <code>&lt;head&gt;</code> y el JavaScript, si lo necesitas, antes de cerrar el <code>&lt;body&gt;</code>.
+                </p>
+
+                <div class="space-y-2 text-[11px]">
+                  <div class="p-2.5 bg-amber-50 border-l-4 border-idatYellow rounded-xl">
+                    <strong class="block mb-0.5">1. El CSS va primero</strong>
+                    <p class="text-gray-600">Siempre en el <code>&lt;head&gt;</code>, antes de tu propia hoja de estilos.</p>
+                  </div>
+                  <div class="p-2.5 bg-blue-50 border-l-4 border-blue-500 rounded-xl">
+                    <strong class="block mb-0.5">2. El JS, al final</strong>
+                    <p class="text-gray-600">Solo hace falta para menús desplegables, modales y alertas que se cierran.</p>
+                  </div>
+                  <div class="p-2.5 bg-emerald-50 border-l-4 border-emerald-500 rounded-xl">
+                    <strong class="block mb-0.5">3. Verifica con un botón</strong>
+                    <p class="text-gray-600">Si <code>btn btn-primary</code> se ve azul, Bootstrap cargó bien.</p>
+                  </div>
+                </div>
+
+                <div class="p-2.5 bg-red-50 border-l-4 border-red-500 rounded-xl text-[10.5px] text-red-950">
+                  ⚠️ <strong>Sin internet, el CDN no carga.</strong> Para entregar el proyecto, descarga los archivos en <code>css/</code> y <code>js/</code> y usa rutas relativas.
+                </div>
+              </div>
+
+              <div class="md:col-span-7 bg-idatDark text-gray-100 rounded-2xl p-4 font-mono text-[10.5px] overflow-auto custom-scrollbar dark-scroll shadow-inner relative flex flex-col justify-center min-h-[260px]">
+                <div class="absolute right-3 top-3 text-[10px] text-gray-400 bg-gray-800 px-2 py-0.5 rounded font-sans uppercase">index.html</div>
+
+                <div class="text-gray-500">&lt;!DOCTYPE html&gt;</div>
+                <div>&lt;<span class="text-blue-400">html</span> <span class="text-yellow-400">lang</span>="<span class="text-green-400">es</span>"&gt;</div>
+                <div>&lt;<span class="text-blue-400">head</span>&gt;</div>
+                <div class="pl-4">&lt;<span class="text-blue-400">meta</span> <span class="text-yellow-400">charset</span>="<span class="text-green-400">UTF-8</span>"&gt;</div>
+                <div class="pl-4">&lt;<span class="text-blue-400">meta</span> <span class="text-yellow-400">name</span>="<span class="text-green-400">viewport</span>" <span class="text-yellow-400">content</span>="<span class="text-green-400">width=device-width, initial-scale=1</span>"&gt;</div>
+
+                <div class="pl-4 mt-2 text-gray-500">/* 1. Bootstrap (CDN) */</div>
+                <div class="pl-4 bg-yellow-500/10 border border-yellow-500/40 rounded px-2 py-1">
+                  &lt;<span class="text-blue-400">link</span> <span class="text-yellow-400">href</span>="<span class="text-green-400">https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css</span>" <span class="text-yellow-400">rel</span>="<span class="text-green-400">stylesheet</span>"&gt;
+                </div>
+
+                <div class="pl-4 mt-1 text-gray-500">/* 2. Tu CSS, siempre después */</div>
+                <div class="pl-4">&lt;<span class="text-blue-400">link</span> <span class="text-yellow-400">href</span>="<span class="text-green-400">css/estilos.css</span>" <span class="text-yellow-400">rel</span>="<span class="text-green-400">stylesheet</span>"&gt;</div>
+                <div>&lt;/<span class="text-blue-400">head</span>&gt;</div>
+
+                <div class="mt-2">&lt;<span class="text-blue-400">body</span>&gt;</div>
+                <div class="pl-4 text-gray-500">…contenido…</div>
+                <div class="pl-4 mt-1 text-gray-500">/* 3. JS antes de cerrar el body */</div>
+                <div class="pl-4 bg-yellow-500/10 border border-yellow-500/40 rounded px-2 py-1">
+                  &lt;<span class="text-blue-400">script</span> <span class="text-yellow-400">src</span>="<span class="text-green-400">.../bootstrap.bundle.min.js</span>"&gt;&lt;/<span class="text-blue-400">script</span>&gt;
+                </div>
+                <div>&lt;/<span class="text-blue-400">body</span>&gt;</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-gray-100 flex justify-between text-xs text-idatMuted flex-shrink-0">
+            <span>Tema 1: instalar sin descargar nada</span>
+            <span class="hidden md:inline">&lt;link&gt; en head · &lt;script&gt; al final</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 5 · REJILLA DE 12 COLUMNAS                                    -->
+      <!-- ============================================================ -->
+      <div id="slide-5" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 2</span>
+                <h2 class="text-xl md:text-2xl font-black text-idatDark uppercase tracking-tight">La rejilla de 12 columnas</h2>
+              </div>
+              <span class="text-xs text-idatMuted font-bold uppercase hidden md:block">container · row · col</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+              <div class="md:col-span-5 flex flex-col justify-center gap-2.5">
+                <p class="text-gray-600 text-xs md:text-sm leading-relaxed">
+                  Toda la página se imagina dividida en <strong>12 columnas invisibles</strong>. Tú solo decides cuántas ocupa cada elemento y la suma de una fila debe dar 12.
+                </p>
+
+                <div class="space-y-1.5 text-[11px]">
+                  <div class="flex gap-2 p-2 bg-white rounded-lg border border-gray-200">
+                    <code class="bg-idatDark text-idatYellow px-1.5 rounded font-bold flex-shrink-0">.container</code>
+                    <p class="text-gray-600">Centra el contenido y le da márgenes laterales.</p>
+                  </div>
+                  <div class="flex gap-2 p-2 bg-white rounded-lg border border-gray-200">
+                    <code class="bg-idatDark text-idatYellow px-1.5 rounded font-bold flex-shrink-0">.row</code>
+                    <p class="text-gray-600">Crea la fila y activa la rejilla (usa Flexbox).</p>
+                  </div>
+                  <div class="flex gap-2 p-2 bg-white rounded-lg border border-gray-200">
+                    <code class="bg-idatDark text-idatYellow px-1.5 rounded font-bold flex-shrink-0">.col-*</code>
+                    <p class="text-gray-600">Define cuántas de las 12 columnas ocupa el elemento.</p>
+                  </div>
+                </div>
+
+                <div class="p-2.5 bg-amber-50 border-l-4 border-idatYellow rounded-xl text-[10.5px] text-idatDark">
+                  💡 <strong>Regla de oro:</strong> si la suma pasa de 12, los elementos que sobran bajan a la siguiente línea.
+                </div>
+              </div>
+
+              <div class="md:col-span-7 flex flex-col gap-2">
+                <div class="bg-idatLight rounded-2xl border border-gray-200 p-3">
+                  <p class="text-[9px] font-bold uppercase tracking-widest text-idatMuted mb-2">Las 12 columnas</p>
+                  <div class="grid grid-cols-12 gap-1">
+                    <div class="col-cell bg-idatDark/15 text-idatDark">1</div><div class="col-cell bg-idatDark/15 text-idatDark">2</div>
+                    <div class="col-cell bg-idatDark/15 text-idatDark">3</div><div class="col-cell bg-idatDark/15 text-idatDark">4</div>
+                    <div class="col-cell bg-idatDark/15 text-idatDark">5</div><div class="col-cell bg-idatDark/15 text-idatDark">6</div>
+                    <div class="col-cell bg-idatDark/15 text-idatDark">7</div><div class="col-cell bg-idatDark/15 text-idatDark">8</div>
+                    <div class="col-cell bg-idatDark/15 text-idatDark">9</div><div class="col-cell bg-idatDark/15 text-idatDark">10</div>
+                    <div class="col-cell bg-idatDark/15 text-idatDark">11</div><div class="col-cell bg-idatDark/15 text-idatDark">12</div>
+                  </div>
+
+                  <div class="space-y-1.5 mt-3">
+                    <div class="grid grid-cols-12 gap-1">
+                      <div class="col-span-6 col-cell bg-idatDark text-idatYellow">col-6</div>
+                      <div class="col-span-6 col-cell bg-idatDark text-idatYellow">col-6</div>
+                    </div>
+                    <div class="grid grid-cols-12 gap-1">
+                      <div class="col-span-4 col-cell bg-amber-500 text-white">col-4</div>
+                      <div class="col-span-4 col-cell bg-amber-500 text-white">col-4</div>
+                      <div class="col-span-4 col-cell bg-amber-500 text-white">col-4</div>
+                    </div>
+                    <div class="grid grid-cols-12 gap-1">
+                      <div class="col-span-3 col-cell bg-emerald-600 text-white">col-3</div>
+                      <div class="col-span-3 col-cell bg-emerald-600 text-white">col-3</div>
+                      <div class="col-span-3 col-cell bg-emerald-600 text-white">col-3</div>
+                      <div class="col-span-3 col-cell bg-emerald-600 text-white">col-3</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-idatDark text-gray-100 rounded-2xl p-3.5 font-mono text-[10.5px]">
+                  <div class="text-[9px] text-gray-400 uppercase font-sans mb-1.5 tracking-wider">Dos columnas iguales</div>
+                  <div>&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">container</span>"&gt;</div>
+                  <div class="pl-4">&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">row g-3</span>"&gt;</div>
+                  <div class="pl-8">&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">col-6</span>"&gt;Izquierda&lt;/<span class="text-blue-400">div</span>&gt;</div>
+                  <div class="pl-8">&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">col-6</span>"&gt;Derecha&lt;/<span class="text-blue-400">div</span>&gt;</div>
+                  <div class="pl-4">&lt;/<span class="text-blue-400">div</span>&gt;</div>
+                  <div>&lt;/<span class="text-blue-400">div</span>&gt;</div>
+                  <div class="mt-1.5 text-[9.5px] text-gray-400 font-sans"><code class="text-idatYellow">g-3</code> controla la separación entre columnas.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between text-xs text-idatMuted flex-shrink-0">
+            <span>Tema 2: la base de todo el framework</span>
+            <span class="hidden md:inline">6 + 6 · 4 + 4 + 4 · 3 + 3 + 3 + 3 = 12</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 6 · BREAKPOINTS                                               -->
+      <!-- ============================================================ -->
+      <div id="slide-6" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 3</span>
+                <h2 class="text-xl md:text-2xl font-black text-idatDark uppercase tracking-tight">Breakpoints: el tamaño va en la clase</h2>
+              </div>
+              <span class="text-xs text-idatMuted font-bold uppercase hidden md:block">mobile first</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+              <div class="md:col-span-7">
+                <div class="overflow-hidden rounded-xl border border-gray-200">
+                  <table class="w-full text-[11px] md:text-xs text-left">
+                    <thead class="bg-idatDark text-white">
+                      <tr>
+                        <th class="px-2.5 py-1.5 font-bold">Clase</th>
+                        <th class="px-2.5 py-1.5 font-bold">Aplica desde</th>
+                        <th class="px-2.5 py-1.5 font-bold">Se ve en</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-600">
+                      <tr class="bg-idatLight/60">
+                        <td class="px-2.5 py-1.5 font-mono font-bold text-idatDark">col-12</td>
+                        <td class="px-2.5 py-1.5">0 px (sin prefijo)</td>
+                        <td class="px-2.5 py-1.5">Celular</td>
+                      </tr>
+                      <tr>
+                        <td class="px-2.5 py-1.5 font-mono font-bold text-yellow-700">col-sm-6</td>
+                        <td class="px-2.5 py-1.5">≥ 576 px</td>
+                        <td class="px-2.5 py-1.5">Celular horizontal</td>
+                      </tr>
+                      <tr class="bg-idatLight/60">
+                        <td class="px-2.5 py-1.5 font-mono font-bold text-amber-700">col-md-6</td>
+                        <td class="px-2.5 py-1.5">≥ 768 px</td>
+                        <td class="px-2.5 py-1.5">Tablet</td>
+                      </tr>
+                      <tr>
+                        <td class="px-2.5 py-1.5 font-mono font-bold text-blue-700">col-lg-4</td>
+                        <td class="px-2.5 py-1.5">≥ 992 px</td>
+                        <td class="px-2.5 py-1.5">Laptop</td>
+                      </tr>
+                      <tr class="bg-idatLight/60">
+                        <td class="px-2.5 py-1.5 font-mono font-bold text-purple-700">col-xl-3</td>
+                        <td class="px-2.5 py-1.5">≥ 1200 px</td>
+                        <td class="px-2.5 py-1.5">Monitor</td>
+                      </tr>
+                      <tr>
+                        <td class="px-2.5 py-1.5 font-mono font-bold text-gray-600">col-xxl-2</td>
+                        <td class="px-2.5 py-1.5">≥ 1400 px</td>
+                        <td class="px-2.5 py-1.5">Pantallas grandes</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="mt-2 p-2.5 bg-blue-50 border-l-4 border-blue-500 rounded-xl text-[11px] text-blue-950">
+                  <strong>Es mobile first:</strong> Bootstrap usa <code>min-width</code>, así que <code>col-md-6</code> aplica desde 768 px <em>hacia arriba</em>. En la Sesión 19 usamos <code>max-width</code> (de mayor a menor); el resultado es el mismo, cambia el sentido.
+                </div>
+              </div>
+
+              <div class="md:col-span-5 flex flex-col gap-2">
+                <div class="bg-idatDark text-gray-100 rounded-2xl p-4 font-mono text-[10.5px] flex-1 flex flex-col justify-center">
+                  <div class="text-[9px] text-gray-400 uppercase font-sans mb-1.5 tracking-wider">Una clase por cada tamaño</div>
+                  <div class="text-gray-500">/* 1 · 2 · 4 columnas según el ancho */</div>
+                  <div>&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">col-12 col-sm-6 col-lg-3</span>"&gt;</div>
+
+                  <div class="mt-2.5 text-gray-500">/* se lee así */</div>
+                  <div>col-12       <span class="text-gray-500">/* celular: 100% */</span></div>
+                  <div>col-sm-6     <span class="text-gray-500">/* desde 576px: mitad */</span></div>
+                  <div>col-lg-3     <span class="text-gray-500">/* desde 992px: cuarto */</span></div>
+                </div>
+
+                <div class="bg-idatLight border border-gray-200 rounded-xl p-2.5 text-[10.5px] text-gray-700">
+                  ⚠️ <strong>No hace falta escribir media queries:</strong> el prefijo <code>sm</code>, <code>md</code>, <code>lg</code> ya contiene la suya.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-gray-100 flex justify-between text-xs text-idatMuted flex-shrink-0">
+            <span>Tema 3: 576 · 768 · 992 · 1200 · 1400</span>
+            <span class="hidden md:inline">El prefijo se aplica hacia arriba</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 7 · SIMULADOR BOOTSTRAP EN VIVO                               -->
+      <!-- ============================================================ -->
+      <div id="slide-7" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full justify-between">
+          <div class="flex items-center justify-between mb-2 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">LABORATORIO EN VIVO</span>
+              <h2 class="text-lg md:text-xl font-black text-idatDark uppercase tracking-tight">Simulador: la rejilla real de Bootstrap</h2>
+            </div>
+            <button onclick="setSimWidth(1280)" class="text-[11px] bg-idatDark text-white px-3 py-1.5 rounded-full font-bold hover:bg-idatYellow hover:text-idatDark transition-colors">
+              ↺ Reiniciar
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch flex-1 min-h-0">
+            <div class="md:col-span-4 flex flex-col justify-center gap-2.5">
+              <p class="text-[11px] md:text-xs text-idatMuted leading-relaxed">
+                Esta ventana carga Bootstrap de verdad. Arrastra el control y mira cómo las tarjetas pasan de <strong>1 a 2 y a 4 columnas</strong> sin tocar el HTML.
+              </p>
+
+              <div class="flex gap-1.5 flex-wrap">
+                <button onclick="setSimWidth(375)" data-bp="375" class="sim-preset bp-chip text-[10px] font-bold px-2 py-1 rounded-lg bg-idatLight border border-gray-300">📱 375</button>
+                <button onclick="setSimWidth(576)" data-bp="576" class="sim-preset bp-chip text-[10px] font-bold px-2 py-1 rounded-lg bg-idatLight border border-gray-300">📱 576</button>
+                <button onclick="setSimWidth(768)" data-bp="768" class="sim-preset bp-chip text-[10px] font-bold px-2 py-1 rounded-lg bg-idatLight border border-gray-300">📲 768</button>
+                <button onclick="setSimWidth(992)" data-bp="992" class="sim-preset bp-chip text-[10px] font-bold px-2 py-1 rounded-lg bg-idatLight border border-gray-300">💻 992</button>
+                <button onclick="setSimWidth(1280)" data-bp="1280" class="sim-preset bp-chip text-[10px] font-bold px-2 py-1 rounded-lg bg-idatLight border border-gray-300">🖥️ 1280</button>
+              </div>
+
+              <div class="bg-idatLight rounded-2xl border border-gray-200 p-3">
+                <div class="flex justify-between text-[10px] font-bold text-idatMuted mb-1">
+                  <span>320px</span>
+                  <span id="sim-width-label" class="text-idatDark font-mono">1280px</span>
+                  <span>1280px</span>
+                </div>
+                <input id="sim-range" type="range" min="320" max="1280" step="1" value="1280" class="sim-range w-full" oninput="setSimWidth(this.value)">
+              </div>
+
+              <div class="bg-idatDark text-white rounded-2xl p-3">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[9px] font-bold uppercase tracking-widest text-gray-400">Breakpoint activo</span>
+                  <span id="sim-device" class="text-[10px] font-black text-idatYellow">XL</span>
+                </div>
+                <div id="sim-class" class="font-mono text-[10px] text-green-400 leading-relaxed break-words">col-lg-3 · 4 columnas</div>
+                <div class="mt-2 pt-2 border-t border-gray-800 text-[10px] text-gray-400">
+                  Columnas visibles: <strong id="sim-cols-label" class="text-white">4</strong> ·
+                  Ancho: <strong id="sim-w-label" class="text-white">1280</strong> px
+                </div>
+              </div>
+            </div>
+
+            <div id="sim-stage" class="device-stage md:col-span-8 border border-gray-200 rounded-2xl p-3 flex items-center justify-center overflow-hidden min-h-[300px]">
+              <div id="sim-frame" class="sim-frame bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden" style="width:1280px;">
+                <iframe id="bs-frame" class="bs-embed" style="height:300px;" title="Demostración de la rejilla de Bootstrap"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 8 · ESPACIADOS Y UTILIDADES                                   -->
+      <!-- ============================================================ -->
+      <div id="slide-8" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 4</span>
+                <h2 class="text-xl md:text-2xl font-black text-idatDark uppercase tracking-tight">Espaciados y utilidades: CSS en el HTML</h2>
+              </div>
+              <span class="text-xs text-idatMuted font-bold uppercase hidden md:block">m · p · gap</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+              <div class="md:col-span-6">
+                <div class="overflow-hidden rounded-xl border border-gray-200">
+                  <table class="w-full text-[11px] text-left">
+                    <thead class="bg-idatDark text-white">
+                      <tr>
+                        <th class="px-2 py-1.5 font-bold">Escala</th>
+                        <th class="px-2 py-1.5 font-bold">rem</th>
+                        <th class="px-2 py-1.5 font-bold">px</th>
+                        <th class="px-2 py-1.5 font-bold">Ejemplo</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-600">
+                      <tr><td class="px-2 py-1 font-mono font-bold text-idatDark">0</td><td class="px-2 py-1">0</td><td class="px-2 py-1">0</td><td class="px-2 py-1 font-mono text-[10px]">mt-0</td></tr>
+                      <tr class="bg-idatLight/60"><td class="px-2 py-1 font-mono font-bold text-idatDark">1</td><td class="px-2 py-1">0.25rem</td><td class="px-2 py-1">4</td><td class="px-2 py-1 font-mono text-[10px]">mt-1</td></tr>
+                      <tr><td class="px-2 py-1 font-mono font-bold text-idatDark">2</td><td class="px-2 py-1">0.5rem</td><td class="px-2 py-1">8</td><td class="px-2 py-1 font-mono text-[10px]">mt-2</td></tr>
+                      <tr class="bg-idatLight/60"><td class="px-2 py-1 font-mono font-bold text-idatDark">3</td><td class="px-2 py-1">1rem</td><td class="px-2 py-1">16</td><td class="px-2 py-1 font-mono text-[10px]">mt-3</td></tr>
+                      <tr><td class="px-2 py-1 font-mono font-bold text-idatDark">4</td><td class="px-2 py-1">1.5rem</td><td class="px-2 py-1">24</td><td class="px-2 py-1 font-mono text-[10px]">mt-4</td></tr>
+                      <tr class="bg-idatLight/60"><td class="px-2 py-1 font-mono font-bold text-idatDark">5</td><td class="px-2 py-1">3rem</td><td class="px-2 py-1">48</td><td class="px-2 py-1 font-mono text-[10px]">mt-5</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="mt-2 grid grid-cols-2 gap-2 text-[10px]">
+                  <div class="p-2 bg-white border border-gray-200 rounded-lg">
+                    <strong class="block text-idatDark mb-0.5">Lados</strong>
+                    <p class="text-gray-600 font-mono text-[9.5px]">t arriba · b abajo<br>s izquierda · e derecha<br>x horizontal · y vertical</p>
+                  </div>
+                  <div class="p-2 bg-white border border-gray-200 rounded-lg">
+                    <strong class="block text-idatDark mb-0.5">Otras utilidades</strong>
+                    <p class="text-gray-600 font-mono text-[9.5px]">text-center · fw-bold<br>rounded · shadow<br>bg-light · border</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="md:col-span-6 flex flex-col gap-2">
+                <div class="bg-idatDark text-gray-100 rounded-2xl p-3.5 font-mono text-[10.5px]">
+                  <div class="text-[9px] text-gray-400 uppercase font-sans mb-1.5 tracking-wider">Antes (tu CSS) · Después (Bootstrap)</div>
+                  <div class="text-red-400/80">/* 3 reglas propias */</div>
+                  <div><span class="text-yellow-400">.caja</span> { <span class="text-sky-400">padding</span>: <span class="text-amber-300">1.5rem</span>; }</div>
+                  <div><span class="text-yellow-400">.caja</span> { <span class="text-sky-400">margin-top</span>: <span class="text-amber-300">1rem</span>; }</div>
+                  <div><span class="text-yellow-400">.caja</span> { <span class="text-sky-400">border-radius</span>: <span class="text-amber-300">.5rem</span>; }</div>
+                  <div class="text-emerald-400 mt-2">/* 1 línea de HTML */</div>
+                  <div>&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">p-4 mt-3 rounded-3 bg-white shadow-sm</span>"&gt;</div>
+                </div>
+
+                <div class="p-3 bg-amber-50 border-l-4 border-idatYellow rounded-xl text-[10.5px] text-idatDark">
+                  💡 <strong>Consecuencia:</strong> el HTML se llena de clases. Es normal: se lee de izquierda a derecha como una receta. La ventaja es que no escribes CSS para cada detalle.
+                </div>
+
+                <div class="p-3 bg-red-50 border-l-4 border-red-500 rounded-xl text-[10.5px] text-red-950">
+                  ⚠️ <strong>No mezcles sistemas:</strong> si usas <code>p-4</code>, no le pongas además <code>padding</code> en tu CSS sin saber cuál gana. El CSS propio cargado después tiene prioridad.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2.5 pt-2 border-t border-gray-100 flex justify-between text-xs text-idatMuted flex-shrink-0">
+            <span>Tema 4: utilidades = una clase por propiedad</span>
+            <span class="hidden md:inline">Escala 0 · 1 · 2 · 3 · 4 · 5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 9 · UTILIDADES FLEX                                           -->
+      <!-- ============================================================ -->
+      <div id="slide-9" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full justify-between">
+          <div class="flex items-center justify-between mb-2 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 4 · FLEX</span>
+              <h2 class="text-lg md:text-xl font-black text-idatDark uppercase tracking-tight">Tu Flexbox de la Sesión 18, ahora en clases</h2>
+            </div>
+            <span class="text-[11px] text-idatMuted font-bold uppercase hidden md:block">mismo resultado</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch flex-1 min-h-0">
+            <div class="md:col-span-6">
+              <div class="overflow-hidden rounded-xl border border-gray-200">
+                <table class="w-full text-[11px] text-left">
+                  <thead class="bg-idatDark text-white">
+                    <tr>
+                      <th class="px-2.5 py-1.5 font-bold">Tu CSS</th>
+                      <th class="px-2.5 py-1.5 font-bold">Clase Bootstrap</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 text-gray-600">
+                    <tr><td class="px-2.5 py-1 font-mono text-[10px]">display: flex</td><td class="px-2.5 py-1 font-mono text-[10px] font-bold text-idatDark">d-flex</td></tr>
+                    <tr class="bg-idatLight/60"><td class="px-2.5 py-1 font-mono text-[10px]">flex-direction: column</td><td class="px-2.5 py-1 font-mono text-[10px] font-bold text-idatDark">flex-column</td></tr>
+                    <tr><td class="px-2.5 py-1 font-mono text-[10px]">justify-content: between</td><td class="px-2.5 py-1 font-mono text-[10px] font-bold text-idatDark">justify-content-between</td></tr>
+                    <tr class="bg-idatLight/60"><td class="px-2.5 py-1 font-mono text-[10px]">align-items: center</td><td class="px-2.5 py-1 font-mono text-[10px] font-bold text-idatDark">align-items-center</td></tr>
+                    <tr><td class="px-2.5 py-1 font-mono text-[10px]">gap: 1rem</td><td class="px-2.5 py-1 font-mono text-[10px] font-bold text-idatDark">gap-3</td></tr>
+                    <tr class="bg-idatLight/60"><td class="px-2.5 py-1 font-mono text-[10px]">flex-wrap: wrap</td><td class="px-2.5 py-1 font-mono text-[10px] font-bold text-idatDark">flex-wrap</td></tr>
+                    <tr><td class="px-2.5 py-1 font-mono text-[10px]">flex: 1</td><td class="px-2.5 py-1 font-mono text-[10px] font-bold text-idatDark">flex-grow-1</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-2 p-2.5 bg-emerald-50 border-l-4 border-emerald-500 rounded-xl text-[10.5px] text-emerald-950">
+                ✅ Si entendiste Flexbox, estas clases se leen solas. No son otra cosa: son las mismas propiedades con nombres cortos.
+              </div>
+            </div>
+
+            <div class="md:col-span-6 flex flex-col gap-2">
+              <div class="border border-gray-200 rounded-2xl overflow-hidden flex-1 min-h-[190px] flex flex-col">
+                <div class="bg-gray-100 px-3 py-1.5 flex justify-between items-center border-b border-gray-200 flex-shrink-0">
+                  <span class="text-[11px] font-bold text-idatDark">Resultado real</span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                </div>
+                <iframe id="flex-frame" class="bs-embed flex-1" style="min-height:200px;" title="Ejemplo de utilidades flex de Bootstrap"></iframe>
+              </div>
+
+              <div class="bg-idatDark text-gray-100 rounded-xl p-3 font-mono text-[10px]">
+                <div>&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">d-flex justify-content-between align-items-center gap-3</span>"&gt;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 10 · BOTONES Y ALERTAS                                        -->
+      <!-- ============================================================ -->
+      <div id="slide-10" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full justify-between">
+          <div class="flex items-center justify-between mb-2 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 5</span>
+              <h2 class="text-lg md:text-xl font-black text-idatDark uppercase tracking-tight">Componentes base: botones y alertas</h2>
+            </div>
+            <span class="text-[11px] text-idatMuted font-bold uppercase hidden md:block">btn · alert</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch flex-1 min-h-0">
+            <div class="md:col-span-5 flex flex-col justify-center gap-2.5">
+              <p class="text-[11px] md:text-xs text-idatMuted leading-relaxed">
+                Un componente es un bloque ya diseñado: tú solo eliges la <strong>variante</strong> (color) y el <strong>tamaño</strong>.
+              </p>
+
+              <div class="bg-idatDark text-gray-100 rounded-2xl p-3 font-mono text-[10.5px]">
+                <div class="text-[9px] text-gray-400 uppercase font-sans mb-1.5 tracking-wider">Botones</div>
+                <div class="text-gray-500">/* clase base + variante + tamaño */</div>
+                <div><span class="text-sky-400">btn</span> <span class="text-green-400">btn-primary</span></div>
+                <div><span class="text-sky-400">btn</span> <span class="text-green-400">btn-outline-secondary</span></div>
+                <div><span class="text-sky-400">btn</span> <span class="text-green-400">btn-success btn-lg</span></div>
+
+                <div class="text-[9px] text-gray-400 uppercase font-sans mb-1.5 mt-2.5 tracking-wider">Alertas</div>
+                <div><span class="text-sky-400">alert</span> <span class="text-green-400">alert-success</span></div>
+                <div><span class="text-sky-400">alert</span> <span class="text-green-400">alert-warning</span></div>
+                <div><span class="text-sky-400">alert</span> <span class="text-green-400">alert-danger</span></div>
+              </div>
+
+              <div class="p-2.5 bg-amber-50 border-l-4 border-idatYellow rounded-xl text-[10.5px] text-idatDark">
+                💡 <strong>Colores con significado:</strong> en una clínica, <code>success</code> para “cita confirmada”, <code>warning</code> para “confirma tu asistencia” y <code>danger</code> para “no disponible”.
+              </div>
+            </div>
+
+            <div class="md:col-span-7 border border-gray-200 rounded-2xl overflow-hidden flex flex-col bg-white">
+              <div class="bg-gray-100 px-3 py-1.5 flex justify-between items-center border-b border-gray-200 flex-shrink-0">
+                <span class="text-[11px] font-bold text-idatDark">Componentes reales</span>
+                <span class="text-[10px] font-mono text-idatMuted">Bootstrap 5.3</span>
+              </div>
+              <div class="flex-1 min-h-[250px]">
+                <iframe id="comp-frame" class="bs-embed" style="height:100%; min-height:250px;" title="Botones, alertas y etiquetas de Bootstrap"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 11 · OTROS COMPONENTES                                        -->
+      <!-- ============================================================ -->
+      <div id="slide-11" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 5 · EXTRA</span>
+                <h2 class="text-xl md:text-2xl font-black text-idatDark uppercase tracking-tight">Lo que ya viene hecho (y no hay que memorizar)</h2>
+              </div>
+              <span class="text-xs text-idatMuted font-bold uppercase hidden md:block">documentación</span>
+            </div>
+
+            <p class="text-xs md:text-sm text-gray-600 mb-3 leading-relaxed">
+              Bootstrap trae decenas de componentes. No se memorizan: se copia el ejemplo de la documentación y se cambia el contenido. Estos son los que más vas a usar en el proyecto.
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+              <div class="p-3 bg-white border border-gray-200 rounded-xl">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg">🧭</span>
+                  <h3 class="font-bold text-[12px] text-idatDark">Navbar</h3>
+                </div>
+                <p class="text-[10px] text-idatMuted leading-snug">Menú superior responsivo con logo, enlaces y botón. Ya incluye el colapso en celular.</p>
+                <code class="block mt-1 text-[9px] font-mono text-emerald-700">navbar-expand-lg</code>
+              </div>
+
+              <div class="p-3 bg-white border border-gray-200 rounded-xl">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg">🗂️</span>
+                  <h3 class="font-bold text-[12px] text-idatDark">Card</h3>
+                </div>
+                <p class="text-[10px] text-idatMuted leading-snug">Tarjeta con imagen, título, texto y botón: ideal para servicios o especialistas.</p>
+                <code class="block mt-1 text-[9px] font-mono text-emerald-700">card · card-body</code>
+              </div>
+
+              <div class="p-3 bg-white border border-gray-200 rounded-xl">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg">📝</span>
+                  <h3 class="font-bold text-[12px] text-idatDark">Formularios</h3>
+                </div>
+                <p class="text-[10px] text-idatMuted leading-snug">Inputs, selects y validación visual listos para la reserva de citas.</p>
+                <code class="block mt-1 text-[9px] font-mono text-emerald-700">form-control · form-label</code>
+              </div>
+
+              <div class="p-3 bg-white border border-gray-200 rounded-xl">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg">🏷️</span>
+                  <h3 class="font-bold text-[12px] text-idatDark">Badges</h3>
+                </div>
+                <p class="text-[10px] text-idatMuted leading-snug">Etiquetas pequeñas para estados: confirmada, pendiente, nuevo.</p>
+                <code class="block mt-1 text-[9px] font-mono text-emerald-700">badge bg-success</code>
+              </div>
+
+              <div class="p-3 bg-white border border-gray-200 rounded-xl">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg">🪟</span>
+                  <h3 class="font-bold text-[12px] text-idatDark">Modal</h3>
+                </div>
+                <p class="text-[10px] text-idatMuted leading-snug">Ventana emergente para confirmar una cita. Necesita el JS de Bootstrap.</p>
+                <code class="block mt-1 text-[9px] font-mono text-amber-700">requiere JS</code>
+              </div>
+
+              <div class="p-3 bg-white border border-gray-200 rounded-xl">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg">🎠</span>
+                  <h3 class="font-bold text-[12px] text-idatDark">Carousel</h3>
+                </div>
+                <p class="text-[10px] text-idatMuted leading-snug">Carrusel de imágenes para la portada o los testimonios.</p>
+                <code class="block mt-1 text-[9px] font-mono text-amber-700">requiere JS</code>
+              </div>
+            </div>
+
+            <div class="mt-3 p-3 bg-idatDark text-white rounded-xl flex items-center gap-3">
+              <span class="text-lg flex-shrink-0">📚</span>
+              <p class="text-[10.5px] leading-relaxed"><strong class="text-idatYellow">getbootstrap.com/docs/5.3</strong> · Cada componente tiene su ejemplo, sus clases y la opción de copiar el código. Es la única página que necesitas tener abierta.</p>
+            </div>
+          </div>
+
+          <div class="mt-2.5 pt-2 border-t border-gray-100 flex justify-between text-xs text-idatMuted flex-shrink-0">
+            <span>Tema 5: copiar, pegar y adaptar</span>
+            <span class="hidden md:inline">Navbar · Card · Form · Badge · Modal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 12 · TALLER                                                   -->
+      <!-- ============================================================ -->
+      <div id="slide-12" class="slide w-full bg-white rounded-3xl shadow-xl border border-gray-200 p-6 md:p-10 flex-col justify-between h-full">
+        <div class="flex flex-col h-full justify-between">
+          <div class="flex items-center justify-between mb-2 flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="bg-idatYellow text-idatDark font-bold px-2.5 py-0.5 rounded text-xs">TEMA 6 · TALLER</span>
+              <h2 class="text-lg md:text-xl font-black text-idatDark uppercase tracking-tight">Integra Bootstrap en tu landing</h2>
+            </div>
+            <button onclick="toggleExample('taller')" class="text-[11px] bg-idatDark text-white px-3.5 py-1.5 rounded-full font-bold hover:bg-idatYellow hover:text-idatDark transition-colors">
+              💻 Ver Código / Vista Previa
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch flex-1 min-h-0">
+            <div class="flex flex-col justify-start gap-2">
+              <p class="text-idatMuted leading-relaxed text-xs md:text-sm">
+                Partimos de la landing del centro odontológico (Sesión 19) y reemplazamos la estructura por la de Bootstrap, sin perder el diseño.
+              </p>
+
+              <div class="space-y-1.5 text-[11px]">
+                <div class="p-2 bg-gray-50 rounded-lg border-l-4 border-idatYellow">
+                  <strong>1.</strong> Enlaza el CSS de Bootstrap <strong>antes</strong> de tu hoja de estilos.
+                </div>
+                <div class="p-2 bg-gray-50 rounded-lg border-l-4 border-amber-500">
+                  <strong>2.</strong> Cambia tu <code>&lt;header&gt;</code> por un <code>navbar navbar-expand-lg</code>.
+                </div>
+                <div class="p-2 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                  <strong>3.</strong> La galería de servicios: <code>container &gt; row g-4 &gt; col-12 col-md-6 col-lg-4</code>.
+                </div>
+                <div class="p-2 bg-gray-50 rounded-lg border-l-4 border-emerald-500">
+                  <strong>4.</strong> Botones: <code>btn btn-primary</code>. Aviso de cita: <code>alert alert-success</code>.
+                </div>
+                <div class="p-2 bg-gray-50 rounded-lg border-l-4 border-idatDark">
+                  <strong>5.</strong> Revisa qué cambió y qué se rompió: ahí está el aprendizaje.
+                </div>
+              </div>
+
+              <div class="mt-1 p-2.5 bg-red-50 border-l-4 border-red-500 rounded-xl text-[10px] text-red-950">
+                ⚠️ Si tu CSS propio “no se aplica”, revisa el orden: <strong>Bootstrap primero, tu CSS después</strong>.
+              </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex flex-col bg-white h-full min-h-[280px]">
+              <div class="bg-gray-100 px-3 py-1.5 flex justify-between items-center border-b border-gray-200 flex-shrink-0">
+                <span id="label-taller" class="text-[11px] font-bold text-idatDark">Resultado en Vivo</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+              </div>
+
+              <div class="p-3 flex-1 overflow-auto custom-scrollbar flex items-center justify-center bg-gray-50/70">
+                <div id="preview-taller" class="w-full">
+                  <iframe id="taller-frame" class="bs-embed" style="height:420px;" title="Landing del centro odontológico con Bootstrap"></iframe>
+                </div>
+
+                <div id="code-taller" class="hidden w-full h-full font-mono text-[10px] text-yellow-400 bg-idatDark p-3 rounded-xl overflow-auto custom-scrollbar dark-scroll">
+                  <pre><span class="text-gray-500">&lt;!-- 1. En el head, antes de tu CSS --&gt;</span>
+&lt;<span class="text-blue-400">link</span> <span class="text-yellow-400">href</span>="<span class="text-green-400">...bootstrap.min.css</span>" <span class="text-yellow-400">rel</span>="<span class="text-green-400">stylesheet</span>"&gt;
+&lt;<span class="text-blue-400">link</span> <span class="text-yellow-400">href</span>="<span class="text-green-400">css/estilos.css</span>" <span class="text-yellow-400">rel</span>="<span class="text-green-400">stylesheet</span>"&gt;
+
+<span class="text-gray-500">&lt;!-- 2. El menú --&gt;</span>
+&lt;<span class="text-blue-400">nav</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">navbar navbar-expand-lg bg-dark</span>"&gt;
+  &lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">container</span>"&gt;
+    &lt;<span class="text-blue-400">a</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">navbar-brand text-white</span>"&gt;Sonrisa Viva&lt;/<span class="text-blue-400">a</span>&gt;
+    &lt;<span class="text-blue-400">button</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">btn btn-warning btn-sm ms-auto</span>"&gt;
+      Reservar
+    &lt;/<span class="text-blue-400">button</span>&gt;
+  &lt;/<span class="text-blue-400">div</span>&gt;
+&lt;/<span class="text-blue-400">nav</span>&gt;
+
+<span class="text-gray-500">&lt;!-- 3. La galería de servicios --&gt;</span>
+&lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">container py-4</span>"&gt;
+  &lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">row g-3</span>"&gt;
+    &lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">col-12 col-md-4</span>"&gt;
+      &lt;<span class="text-blue-400">div</span> <span class="text-yellow-400">class</span>="<span class="text-green-400">p-3 border rounded-3</span>"&gt;Limpieza&lt;/<span class="text-blue-400">div</span>&gt;
+    &lt;/<span class="text-blue-400">div</span>&gt;
+    <span class="text-gray-500">&lt;!-- … las otras dos columnas --&gt;</span>
+  &lt;/<span class="text-blue-400">div</span>&gt;
+&lt;/<span class="text-blue-400">div</span>&gt;</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- 13 · CIERRE                                                   -->
+      <!-- ============================================================ -->
+      <div id="slide-13" class="slide w-full bg-idatDark rounded-3xl shadow-xl border border-gray-900 p-6 md:p-10 flex-col justify-between h-full text-white">
+        <div class="flex flex-col items-center justify-center text-center my-auto">
+          <div class="bg-idatYellow text-idatDark font-black px-6 py-2 rounded-full text-xs md:text-sm tracking-widest uppercase mb-3 animate-bounce">
+            ¡SESIÓN 20 COMPLETADA!
+          </div>
+          <h2 class="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
+            Muchas Gracias por <br class="hidden md:block">su Atención
+          </h2>
+          <p class="text-gray-400 mt-2 max-w-2xl text-xs md:text-sm leading-relaxed">
+            Ya sabes instalar Bootstrap, usar su rejilla de 12 columnas y sus utilidades, y aplicar componentes sin escribir CSS desde cero.
+          </p>
+
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-3xl">
+            <div class="bg-gray-800/80 p-4 rounded-2xl border border-gray-700 text-left">
+              <span class="text-idatYellow text-[11px] font-bold uppercase block tracking-wider mb-1.5">TU RESUMEN DE BOLSILLO</span>
+              <ul class="text-[11px] text-gray-300 space-y-1">
+                <li>• <code class="text-idatYellow">CSS en head</code> + <code class="text-idatYellow">JS al final</code> → instalación por CDN.</li>
+                <li>• <code class="text-idatYellow">container &gt; row &gt; col</code> → la rejilla de 12.</li>
+                <li>• <code class="text-idatYellow">col-12 col-md-6 col-lg-3</code> → responsive sin media queries.</li>
+                <li>• <code class="text-idatYellow">m-*</code>, <code class="text-idatYellow">p-*</code>, <code class="text-idatYellow">gap-*</code> → espaciados en la clase.</li>
+                <li>• <code class="text-idatYellow">d-flex</code> → tu Flexbox de siempre, con otro nombre.</li>
+                <li>• <code class="text-idatYellow">btn</code> y <code class="text-idatYellow">alert</code> → componentes con variantes de color.</li>
+              </ul>
+            </div>
+
+            <div class="bg-gray-800/80 p-4 rounded-2xl border border-gray-700 text-left">
+              <span class="text-idatYellow text-[11px] font-bold uppercase block tracking-wider mb-1.5">PRÓXIMA CLASE: SESIÓN 21</span>
+              <p class="text-[11px] text-gray-300 mb-2 font-medium">Revisión de diseño final y preparación de la sustentación.</p>
+              <ul class="text-[11px] text-gray-300 space-y-1">
+                <li>• Qué revisar antes de entregar el proyecto.</li>
+                <li>• Ajustes de responsividad y rendimiento.</li>
+                <li>• Ensayo de la presentación técnica.</li>
+                <li>• Ronda de preguntas del jurado.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center gap-2 bg-amber-500/10 border border-amber-500/40 rounded-xl px-4 py-2">
+            <span class="text-base">📌</span>
+            <p class="text-[11px] text-amber-200 text-left"><strong class="text-amber-300">Para la próxima:</strong> aplica Bootstrap a tu Proyecto Final y trae el enlace actualizado para revisarlo en clase.</p>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-2.5 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-[11px] text-gray-500 w-full gap-1 flex-shrink-0">
+          <span>Ing. Jhon Chavez • <span class="text-idatYellow">Ecosistema Bootstrap</span></span>
+          <span>© 2026 IDAT. Todos los derechos reservados.</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-white border-t border-gray-200 px-6 md:px-12 py-3 flex flex-col md:flex-row items-center justify-between gap-4 h-auto md:h-[72px] flex-shrink-0 z-50">
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-idatMuted font-bold tracking-wider uppercase">Progreso actual:</span>
+      <div class="flex items-center gap-1.5 bg-idatLight border border-gray-200 rounded-full px-3 py-1 text-xs font-black text-idatDark">
+        <span id="current-slide-num">1</span> / <span id="total-slides-num">13</span>
+      </div>
+      <span id="slide-title-hint" class="hidden xl:inline text-[11px] text-idatMuted font-medium">Portada</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="btn-prev" onclick="changeSlide(-1)" class="bg-idatDark hover:bg-idatYellow hover:text-idatDark text-white p-2.5 rounded-full transition-all duration-200 shadow disabled:opacity-30 disabled:pointer-events-none" title="Diapositiva Anterior">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+
+      <div class="flex items-center gap-1.5 px-2" id="dots-container"></div>
+
+      <button id="btn-next" onclick="changeSlide(1)" class="bg-idatDark hover:bg-idatYellow hover:text-idatDark text-white p-2.5 rounded-full transition-all duration-200 shadow disabled:opacity-30 disabled:pointer-events-none" title="Siguiente Diapositiva">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <div class="hidden lg:flex items-center gap-2 text-xs text-idatMuted">
+      <span class="font-bold">Atajos del teclado:</span>
+      <kbd class="px-2 py-0.5 bg-gray-100 border border-gray-300 rounded text-idatDark font-mono font-bold shadow-sm">←</kbd>
+      <kbd class="px-2 py-0.5 bg-gray-100 border border-gray-300 rounded text-idatDark font-mono font-bold shadow-sm">→</kbd>
+    </div>
+  </footer>
+
+  <script>
+    /* ============ NAVEGACIÓN ============ */
+    const totalSlides = 13;
+    let currentSlide = 1;
+
+    const SLIDE_TITLES = [
+      'Portada',
+      'Ruta de la sesión',
+      '¿Qué es Bootstrap?',
+      'Instalación por CDN',
+      'Rejilla de 12 columnas',
+      'Breakpoints',
+      'Simulador de la rejilla',
+      'Espaciados y utilidades',
+      'Utilidades Flex',
+      'Botones y alertas',
+      'Otros componentes',
+      'Taller de integración',
+      'Cierre'
+    ];
+
+    function initDots() {
+      const container = document.getElementById('dots-container');
+      container.innerHTML = '';
+      for (let i = 1; i <= totalSlides; i++) {
+        const dot = document.createElement('button');
+        dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === 1 ? 'bg-idatYellow ring-2 ring-idatDark w-4' : 'bg-gray-300 hover:bg-gray-400'}`;
+        dot.title = `Ir a Diapositiva ${i} — ${SLIDE_TITLES[i - 1]}`;
+        dot.onclick = () => jumpToSlide(i);
+        container.appendChild(dot);
+      }
+    }
+
+    function jumpToSlide(num) {
+      if (num < 1 || num > totalSlides) return;
+      document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+      currentSlide = num;
+      document.getElementById(`slide-${currentSlide}`).classList.add('active');
+      updateUI();
+    }
+
+    function changeSlide(direction) {
+      jumpToSlide(currentSlide + direction);
+    }
+
+    function updateUI() {
+      document.getElementById('current-slide-num').innerText = currentSlide;
+      document.getElementById('total-slides-num').innerText = totalSlides;
+      document.getElementById('slide-title-hint').innerText = SLIDE_TITLES[currentSlide - 1];
+
+      document.getElementById('btn-prev').disabled = currentSlide === 1;
+      document.getElementById('btn-next').disabled = currentSlide === totalSlides;
+
+      const dots = document.getElementById('dots-container').children;
+      for (let i = 0; i < dots.length; i++) {
+        const index = i + 1;
+        if (index === currentSlide) {
+          dots[i].className = 'w-4 h-2.5 rounded-full transition-all duration-300 bg-idatYellow ring-2 ring-idatDark';
+        } else {
+          dots[i].className = 'w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300 hover:bg-gray-400';
+        }
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        changeSlide(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        changeSlide(-1);
+      } else if (e.key === 'Home') {
+        jumpToSlide(1);
+      } else if (e.key === 'End') {
+        jumpToSlide(totalSlides);
+      }
+    });
+
+    /* ============ TOGGLE CÓDIGO / VISTA PREVIA ============ */
+    function toggleExample(id) {
+      const previewEl = document.getElementById(`preview-${id}`);
+      const codeEl = document.getElementById(`code-${id}`);
+      const labelEl = document.getElementById(`label-${id}`);
+
+      if (previewEl.classList.contains('hidden')) {
+        previewEl.classList.remove('hidden');
+        codeEl.classList.add('hidden');
+        labelEl.innerText = 'Resultado en Vivo';
+      } else {
+        previewEl.classList.add('hidden');
+        codeEl.classList.remove('hidden');
+        labelEl.innerText = 'Código HTML';
+      }
+    }
+
+    /* ============ DEMOS REALES DE BOOTSTRAP (iframe aislado) ============ */
+    const BS_CSS = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
+
+    function bootstrapDoc(contenido, extraEstilos) {
+      return `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="${BS_CSS}" rel="stylesheet">
+<style>
+  body { font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; background: #F7FAF9; color: #0B2C2F; margin: 0; padding: 12px; }
+  .rotulo { font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6B8085; margin: 0 0 6px; }
+  .demo-card { background: #fff; border: 1px solid #DCEAE7; border-radius: 12px; padding: 12px 8px; text-align: center; font-weight: 700; font-size: 11px; }
+  ${extraEstilos || ''}
+</style>
+</head>
+<body>${contenido}</body>
+</html>`;
+    }
+
+    /* --- Rejilla en vivo --- */
+    function gridDemo() {
+      const tarjetas = [1, 2, 3, 4].map(n => `
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="demo-card">Tarjeta ${n}</div>
+        </div>`).join('');
+
+      return bootstrapDoc(`
+        <p class="rotulo">container · row g-2 · col-12 col-sm-6 col-lg-3</p>
+        <div class="container-fluid p-0">
+          <div class="row g-2">${tarjetas}</div>
+        </div>
+        <p class="rotulo mt-3">navbar + alert (también responsive)</p>
+        <nav class="navbar navbar-expand-md bg-dark rounded-3 px-2 py-1 mb-2">
+          <span class="navbar-brand text-warning fw-bold fs-6 m-0">IDAT</span>
+          <div class="d-none d-md-flex gap-3 ms-auto">
+            <span class="text-white-50 small">Inicio</span>
+            <span class="text-white-50 small">Cursos</span>
+            <span class="text-white-50 small">Contacto</span>
+          </div>
+        </nav>
+        <div class="alert alert-success py-2 px-3 mb-0 small">Cita confirmada para el martes a las 10:30.</div>
+      `);
+    }
+
+    /* --- Utilidades flex --- */
+    function flexDemo() {
+      const caja = (texto) => `<span class="badge bg-secondary">${texto}</span>`;
+      return bootstrapDoc(`
+        <p class="rotulo">d-flex justify-content-between</p>
+        <div class="d-flex justify-content-between align-items-center bg-white border rounded-3 p-2 mb-2">
+          ${caja('A')}${caja('B')}${caja('C')}
+        </div>
+        <p class="rotulo">d-flex justify-content-center gap-2</p>
+        <div class="d-flex justify-content-center gap-2 bg-white border rounded-3 p-2 mb-2">
+          ${caja('A')}${caja('B')}${caja('C')}
+        </div>
+        <p class="rotulo">d-flex flex-column align-items-center</p>
+        <div class="d-flex flex-column align-items-center gap-1 bg-white border rounded-3 p-2">
+          ${caja('A')}${caja('B')}
+        </div>
+      `, 'body { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }');
+    }
+
+    /* --- Componentes --- */
+    function componentsDemo() {
+      return bootstrapDoc(`
+        <p class="rotulo">Botones</p>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button type="button" class="btn btn-primary btn-sm">Reservar cita</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm">Ver servicios</button>
+          <button type="button" class="btn btn-success">Confirmar</button>
+          <button type="button" class="btn btn-danger btn-sm" disabled>No disponible</button>
+        </div>
+
+        <p class="rotulo">Alertas</p>
+        <div class="alert alert-success py-2 px-3 mb-2 small">
+          <strong>¡Listo!</strong> Tu cita quedó confirmada para el martes 10:30.
+        </div>
+        <div class="alert alert-warning py-2 px-3 mb-2 small">
+          <strong>Atención:</strong> confirma tu asistencia 24 horas antes.
+        </div>
+        <div class="alert alert-danger py-2 px-3 mb-3 small">
+          <strong>Sin cupos:</strong> el horario de las 16:00 está completo.
+        </div>
+
+        <p class="rotulo">Etiquetas de estado</p>
+        <div class="d-flex gap-2">
+          <span class="badge bg-success">Confirmada</span>
+          <span class="badge bg-warning text-dark">Pendiente</span>
+          <span class="badge bg-secondary">Reprogramada</span>
+        </div>
+      `, 'body { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }');
+    }
+
+    /* --- Taller: landing con Bootstrap --- */
+    function tallerDemo() {
+      return bootstrapDoc(`
+        <nav class="navbar navbar-expand-lg bg-dark rounded-3 px-3 py-2 mb-3">
+          <span class="navbar-brand text-white fw-bold fs-6 m-0">Sonrisa Viva</span>
+          <div class="d-none d-lg-flex gap-4 ms-4">
+            <span class="text-white-50 small">Servicios</span>
+            <span class="text-white-50 small">Equipo</span>
+            <span class="text-white-50 small">Contacto</span>
+          </div>
+          <button type="button" class="btn btn-warning btn-sm ms-auto">Reservar</button>
+        </nav>
+
+        <div class="row g-2">
+          <div class="col-12 col-md-4">
+            <div class="border rounded-3 p-3 bg-white">
+              <p class="fw-bold mb-1 small">Limpieza dental</p>
+              <p class="text-muted mb-0" style="font-size:11px">Desde S/ 80</p>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="border rounded-3 p-3 bg-white">
+              <p class="fw-bold mb-1 small">Ortodoncia</p>
+              <p class="text-muted mb-0" style="font-size:11px">Desde S/ 1 200</p>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="border rounded-3 p-3 bg-white">
+              <p class="fw-bold mb-1 small">Implantes</p>
+              <p class="text-muted mb-0" style="font-size:11px">Desde S/ 2 500</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-success py-2 px-3 mt-3 mb-0 small">
+          Cita registrada. Te confirmamos por WhatsApp en menos de 2 horas.
+        </div>
+      `);
+    }
+
+    /* ============ SIMULADOR DE ANCHO ============ */
+    const SIM_BREAKPOINTS = [
+      { min: 1200, name: 'XL', clase: 'col-lg-3 · 4 columnas', cols: '4', mq: '@media (min-width: 1200px)' },
+      { min: 992,  name: 'LG', clase: 'col-lg-3 · 4 columnas', cols: '4', mq: '@media (min-width: 992px)' },
+      { min: 768,  name: 'MD', clase: 'col-sm-6 · 2 columnas', cols: '2', mq: '@media (min-width: 768px)' },
+      { min: 576,  name: 'SM', clase: 'col-sm-6 · 2 columnas', cols: '2', mq: '@media (min-width: 576px)' },
+      { min: 0,    name: 'XS', clase: 'col-12 · 1 columna',   cols: '1', mq: 'Estilos base (sin media query)' }
+    ];
+
+    function setSimWidth(value) {
+      const width = Math.max(320, Math.min(1280, parseInt(value, 10) || 1280));
+      const frame = document.getElementById('sim-frame');
+      const stage = document.getElementById('sim-stage');
+      const range = document.getElementById('sim-range');
+
+      frame.style.width = width + 'px';
+      frame.style.maxWidth = width + 'px';
+
+      const avail = stage.clientWidth - 24;
+      const zoom = Math.min(1, avail / width);
+      frame.style.zoom = String(zoom);
+
+      if (range.value !== String(width)) range.value = width;
+      document.getElementById('sim-width-label').innerText = width + 'px';
+      document.getElementById('sim-w-label').innerText = width;
+
+      // La altura del iframe cambia según cuántas filas ocupan las tarjetas
+      const bsFrame = document.getElementById('bs-frame');
+      bsFrame.style.height = width < 576 ? '430px' : (width < 992 ? '330px' : '250px');
+
+      const bp = SIM_BREAKPOINTS.find(b => width >= b.min);
+      document.getElementById('sim-device').innerText = bp.name;
+      document.getElementById('sim-class').innerText = `${bp.mq} → ${bp.clase}`;
+      document.getElementById('sim-cols-label').innerText = bp.cols;
+
+      document.querySelectorAll('.sim-preset').forEach(btn => {
+        const isActive = parseInt(btn.dataset.bp, 10) === width;
+        btn.classList.toggle('bg-idatDark', isActive);
+        btn.classList.toggle('text-idatYellow', isActive);
+        btn.classList.toggle('border-idatDark', isActive);
+        btn.classList.toggle('bg-idatLight', !isActive);
+        btn.classList.toggle('border-gray-300', !isActive);
+      });
+    }
+
+    /* ============ INIT ============ */
+    window.addEventListener('load', () => {
+      initDots();
+      updateUI();
+
+      // Cargar las demos reales de Bootstrap
+      document.getElementById('bs-frame').srcdoc = gridDemo();
+      document.getElementById('flex-frame').srcdoc = flexDemo();
+      document.getElementById('comp-frame').srcdoc = componentsDemo();
+      document.getElementById('taller-frame').srcdoc = tallerDemo();
+
+      setSimWidth(1280);
+    });
+  </script>
+</body>
+</html>
